@@ -8,7 +8,7 @@ const utf8 = require('utf8');
 const http = require('http');
 
 function encryptData(jsonData){
-    console.dir(jsonData);
+    //console.dir(jsonData);
     //const token = jsonData.body.key;
     //const publicKey = jsonData.body.pubKey;
     //
@@ -16,39 +16,57 @@ function encryptData(jsonData){
     const publicKey = jsonData.hexPublicKey;
     const privateKey = jsonData.hexPrivateKey;
 
-    console.log("token = " + token);
-    console.log("publicKey = " + publicKey);
-    console.log("privateKey = " + privateKey);
+    //console.log("token = " + token);
+    //console.log("publicKey = " + publicKey);
+    //console.log("privateKey = " + privateKey);
 
     const cipherMode = 0;
 
     const businessJson = {
-        "body":{
-            "loginPass": "aaaaaaaaaaaaaaaaaaawwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwa aaaaaaaaaaaaaaaaaaawwwwwwwwwwwwwwwwww1 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 pkkk pkkk 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111 1111111111111111111111111111111111111111111111111111111"
+        "body": {
+            "acNo": "6214139990000000031",
+            "page": 1,
+            "pageSize": 10
         }
     }
 
     const msgString = JSON.stringify(businessJson);
 
-    console.log("main mode = " + cipherMode);
+    //console.log("main mode = " + cipherMode);
 
-    let encryptData = cryptoutil.sm2Encrypt(msgString, publicKey, cipherMode);sm2.doEncrypt(msgString, publicKey, cipherMode);
+    var count = 0;
 
-    console.log("encrypData = " + encryptData);
-    console.log("encrypData length = " + encryptData.length);
+    for(var i=0; i<1000; i++){
 
-    //const loginPwdUrl = "/wbc/custInfo/addLoginPwd";
-    const loginPwdUrl = "/v2/info";
+        let encryptData = cryptoutil.sm2Encrypt(msgString, publicKey, cipherMode);
+        //sm2.doEncrypt(msgString, publicKey, cipherMode);
 
-    const postJson = {
-        "data": encryptData
-    };
+        const isFix = encryptData.isFix;
 
-    function callbackData(json){
-        console.dir(json);
+        const hexString = encryptData.hexString;
+        var pushStr = "04" + hexString;
+        if(isFix){
+            pushStr = "04" + encryptData.fixString;
+        }
+
+        //const loginPwdUrl = "/wbc/custInfo/addLoginPwd";
+        const loginPwdUrl = "/v2/info";
+
+        const postJson = {
+            "data": pushStr
+        };
+
+        function callbackData(json){
+            console.dir(json);
+        }
+
+        if(isFix){
+         postData(postJson, loginPwdUrl, token, callbackData);
+         count +=1;
+        }
     }
 
-    postData(postJson, loginPwdUrl, token, callbackData);
+    console.log("count " + count)
 
 }
 
@@ -71,8 +89,8 @@ function postData(postJson, urlPath,token, callbackData){
     console.log("post_data = " + post_data);
 
     var post_options = {
-        hostname: '127.0.0.1',
-        port    : '8001',
+        hostname: 'www.ifdp.com',
+        port    : '9800',
         path    : urlPath,
         method  : 'POST',
         body    : postJson,
@@ -85,7 +103,7 @@ function postData(postJson, urlPath,token, callbackData){
     };
 
     var req = http.request(post_options, callback).on("error", (err) => {
-        console.log("Error:" + err.message);
+        //console.log("Error:" + err.message);
     });
     req.write(post_data);
     req.end();
